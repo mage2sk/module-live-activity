@@ -1,0 +1,9 @@
+{
+  "live-activity-bg": "#FFFFFF",
+  "live-activity-shadow": "0 4px 20px rgba(0,0,0,0.12)",
+  "live-activity-highlight": "#0D9488",
+  "live-activity-text": "#171717",
+  "live-activity-text-secondary": "#525252",
+  "live-activity-text-muted": "#A3A3A3",
+  "live-activity-border": "#E5E7EB"
+}

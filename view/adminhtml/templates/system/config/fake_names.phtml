@@ -1,0 +1,190 @@
+<?php
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Simple Fake Names Manager
+ *
+ * @var $block \Panth\LiveActivity\Block\Adminhtml\System\Config\FakeNames
+ */
+$elementId = $block->getElementId();
+$elementName = $block->getElementName();
+$defaultNames = $block->getDefaultValue();
+?>
+
+<?php
+/** @var \Magento\Framework\View\Asset\Repository $assetRepo */
+$assetRepo = $block->getViewFileUrl('Panth_LiveActivity::js/alpine.min.js');
+?>
+<script src="<?= $block->escapeUrl($assetRepo) ?>" defer></script>
+
+<div id="<?= $block->escapeHtmlAttr($elementId) ?>_container" x-data="fakeNamesManager()" x-init="init()">
+    <!-- Hidden input to store JSON array -->
+    <input type="hidden"
+           id="<?= $block->escapeHtmlAttr($elementId) ?>"
+           name="<?= $block->escapeHtmlAttr($elementName) ?>"
+           value="<?= $block->escapeHtmlAttr($block->getValue()) ?>"
+           :value="JSON.stringify(names)">
+
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e5e5e5;">
+            <h4 style="margin: 0; font-size: 14px; font-weight: 600;">Fake Customer Names (<span x-text="names.length"></span>)</h4>
+            <button type="button"
+                    @click="resetToDefaults()"
+                    style="padding: 5px 12px; font-size: 12px; background: #fff; border: 1px solid #ccc; border-radius: 3px; cursor: pointer;">
+                Reset to Defaults
+            </button>
+        </div>
+
+        <!-- Add New Name -->
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; gap: 8px;">
+                <input type="text"
+                       x-model="newName"
+                       @keyup.enter="addName()"
+                       placeholder="Enter name (e.g., John D., Sarah M.)"
+                       maxlength="30"
+                       style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px;">
+                <button type="button"
+                        @click="addName()"
+                        style="padding: 8px 16px; background: #1979c3; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; white-space: nowrap;">
+                    + Add Name
+                </button>
+            </div>
+            <small style="display: block; margin-top: 5px; color: #666;">
+                Format: FirstName L. (e.g., "John D." or "Sarah M.") - Max 30 characters
+            </small>
+        </div>
+
+        <!-- Success Message -->
+        <div x-show="showMessage"
+             x-transition
+             :class="messageType === 'success' ? 'message-success' : 'message-error'"
+             style="padding: 10px; margin-bottom: 15px; border-radius: 3px; font-size: 13px;"
+             :style="messageType === 'success' ? 'background: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32;' : 'background: #ffebee; border: 1px solid #f44336; color: #c62828;'">
+            <span x-text="message"></span>
+        </div>
+
+        <!-- Names List -->
+        <div style="max-height: 400px; overflow-y: auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+                <template x-for="(name, index) in names" :key="index">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 3px; font-size: 13px;">
+                        <span x-text="name" style="flex: 1;"></span>
+                        <button type="button"
+                                @click="removeName(index)"
+                                title="Remove"
+                                style="margin-left: 8px; color: #e53e3e; background: none; border: none; cursor: pointer; font-size: 18px; line-height: 1; padding: 0;">
+                            &times;
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="names.length === 0"
+                 style="padding: 40px; text-align: center; color: #999;">
+                No names added. Add some names or click "Reset to Defaults".
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fakeNamesManager() {
+    return {
+        names: [],
+        newName: '',
+        showMessage: false,
+        message: '',
+        messageType: 'success',
+        defaultNames: <?= /* @noEscape */ $defaultNames ?>,
+
+        init() {
+            // Use getAttribute to read server-rendered value before Alpine overwrites the DOM property
+            const el = document.getElementById('<?= $block->escapeJs($elementId) ?>');
+            const existingValue = el.getAttribute('value');
+            if (existingValue && existingValue.trim() !== '' && existingValue !== '[]') {
+                try {
+                    const parsed = JSON.parse(existingValue);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        this.names = parsed;
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse names:', e);
+                }
+            }
+            this.names = this.defaultNames;
+        },
+
+        addName() {
+            const name = this.newName.trim();
+
+            // Validation
+            if (!name) {
+                this.displayMessage('Please enter a name', 'error');
+                return;
+            }
+
+            if (name.length > 30) {
+                this.displayMessage('Name is too long (max 30 characters)', 'error');
+                return;
+            }
+
+            if (this.names.includes(name)) {
+                this.displayMessage('This name already exists', 'error');
+                return;
+            }
+
+            // Add name
+            this.names.push(name);
+            this.newName = '';
+            this.displayMessage('Name added successfully!', 'success');
+        },
+
+        removeName(index) {
+            const name = this.names[index];
+            this.names.splice(index, 1);
+            this.displayMessage('Removed: ' + name, 'success');
+        },
+
+        resetToDefaults() {
+            if (confirm('Are you sure you want to reset to default names? This will remove all custom names.')) {
+                this.names = [...this.defaultNames];
+                this.displayMessage('Reset to defaults successfully!', 'success');
+            }
+        },
+
+        displayMessage(msg, type) {
+            this.message = msg;
+            this.messageType = type;
+            this.showMessage = true;
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                this.showMessage = false;
+            }, 3000);
+        }
+    }
+}
+</script>
+
+<style>
+.message-success {
+    animation: slideIn 0.3s ease-out;
+}
+
+.message-error {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>

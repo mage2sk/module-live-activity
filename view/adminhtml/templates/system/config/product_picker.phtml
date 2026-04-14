@@ -1,0 +1,774 @@
+<?php
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Product Picker Template - Clean Modern Design
+ *
+ * @var $block \Panth\LiveActivity\Block\Adminhtml\System\Config\ProductPicker
+ */
+$elementId = $block->getElementId();
+$elementName = $block->getElementName();
+$elementValue = $block->getElementValue();
+?>
+
+<?php
+/** @var \Magento\Framework\View\Asset\Repository $assetRepo */
+$assetRepo = $block->getViewFileUrl('Panth_LiveActivity::js/alpine.min.js');
+?>
+<!-- Load Alpine.js -->
+<script src="<?= $block->escapeUrl($assetRepo) ?>" defer></script>
+
+<div id="<?= $block->escapeHtmlAttr($elementId) ?>_container" class="product-picker-wrapper" x-data="productPicker_<?= $block->escapeJs($elementId) ?>()" x-init="init()">
+
+    <!-- Hidden input to store product IDs -->
+    <input type="hidden"
+           id="<?= $block->escapeHtmlAttr($elementId) ?>"
+           name="<?= $block->escapeHtmlAttr($elementName) ?>"
+           :value="productIds">
+
+    <!-- Selected Products Display -->
+    <div class="selected-products-container">
+        <template x-if="selectedProducts.length > 0">
+            <div class="selected-products-grid">
+                <template x-for="product in selectedProducts" :key="product.id">
+                    <div class="selected-product-item">
+                        <div class="selected-product-info">
+                            <div class="selected-product-name" x-text="product.name"></div>
+                            <div class="selected-product-meta">
+                                <span class="meta-label">ID:</span> <span x-text="product.id"></span>
+                                <span class="meta-separator">•</span>
+                                <span class="meta-label">SKU:</span> <span x-text="product.sku"></span>
+                            </div>
+                        </div>
+                        <button type="button"
+                                @click="removeProduct(product.id)"
+                                class="remove-product-btn"
+                                title="Remove product">
+                            ×
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template x-if="selectedProducts.length === 0">
+            <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                </svg>
+                <p>No products selected</p>
+                <small>Click the button below to choose products</small>
+            </div>
+        </template>
+    </div>
+
+    <!-- Select Products Button -->
+    <button type="button"
+            @click="openModal()"
+            class="select-products-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <span>Select Products</span>
+    </button>
+
+    <!-- Modal -->
+    <div class="modal-backdrop"
+         x-show="showModal"
+         @click="closeModal()"
+         x-cloak
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+
+        <div class="modal-container"
+             @click.stop
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h3>Choose Products</h3>
+                <button type="button" @click="closeModal()" class="modal-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <!-- Search Box -->
+                <div class="search-box">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text"
+                           x-model="searchTerm"
+                           @input="searchProducts()"
+                           placeholder="Search by product name, SKU, or ID..."
+                           class="search-input">
+                    <span class="search-hint" x-show="searchTerm.length < 2">Type at least 2 characters</span>
+                </div>
+
+                <!-- Results Info -->
+                <div class="results-info" x-show="searchedProducts.length > 0">
+                    <span>Found <strong x-text="totalResults"></strong> products</span>
+                    <span class="selected-count" x-show="tempSelected.length > 0">
+                        <strong x-text="tempSelected.length"></strong> selected
+                    </span>
+                </div>
+
+                <!-- Products List -->
+                <div class="products-list" x-show="searchedProducts.length > 0">
+                    <template x-for="product in searchedProducts" :key="product.id">
+                        <div class="product-card"
+                             :class="{ 'selected': isSelected(product.id) }"
+                             @click="toggleProduct(product)">
+                            <div class="product-checkbox">
+                                <input type="checkbox" :checked="isSelected(product.id)" readonly>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name" x-text="product.name"></div>
+                                <div class="product-meta">
+                                    <span class="product-id">ID: <strong x-text="product.id"></strong></span>
+                                    <span class="product-sku">SKU: <strong x-text="product.sku"></strong></span>
+                                    <span class="product-price" x-text="'$' + product.price"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Load More -->
+                <div class="load-more-container" x-show="hasMore">
+                    <button type="button"
+                            @click="loadMore()"
+                            class="load-more-btn"
+                            :disabled="loading">
+                        <span x-show="!loading">Load More Products</span>
+                        <span x-show="loading">Loading...</span>
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" x-show="loading && searchedProducts.length === 0">
+                    <div class="spinner"></div>
+                    <p>Searching products...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="no-results" x-show="searchTerm.length >= 2 && searchedProducts.length === 0 && !loading">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <p>No products found</p>
+                    <small>Try a different search term</small>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" @click="closeModal()" class="btn-cancel">
+                    Cancel
+                </button>
+                <button type="button" @click="confirmSelection()" class="btn-confirm">
+                    Done (<span x-text="tempSelected.length"></span>)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function productPicker_<?= $block->escapeJs($elementId) ?>() {
+    return {
+        productIds: '<?= $block->escapeJs($elementValue) ?>',
+        selectedProducts: [],
+        tempSelected: [],
+        searchTerm: '',
+        searchedProducts: [],
+        totalResults: 0,
+        page: 1,
+        hasMore: false,
+        loading: false,
+        showModal: false,
+
+        init() {
+            if (this.productIds) {
+                this.loadExistingProducts();
+            }
+        },
+
+        loadExistingProducts() {
+            fetch('<?= $block->escapeJs($block->getGetByIdsUrl()) ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    'form_key': '<?= $block->escapeJs($block->getFormKey()) ?>',
+                    'ids': this.productIds
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.products) {
+                    this.selectedProducts = data.products;
+                }
+            });
+        },
+
+        openModal() {
+            this.showModal = true;
+            this.tempSelected = [...this.selectedProducts];
+            this.searchTerm = '';
+            this.searchedProducts = [];
+        },
+
+        closeModal() {
+            this.showModal = false;
+            this.searchTerm = '';
+            this.searchedProducts = [];
+        },
+
+        confirmSelection() {
+            this.selectedProducts = [...this.tempSelected];
+            this.productIds = this.selectedProducts.map(p => p.id).join(',');
+            this.closeModal();
+        },
+
+        searchProducts() {
+            if (this.searchTerm.length < 2) {
+                this.searchedProducts = [];
+                return;
+            }
+
+            this.page = 1;
+            this.loading = true;
+
+            fetch('<?= $block->escapeJs($block->getSearchUrl()) ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    'form_key': '<?= $block->escapeJs($block->getFormKey()) ?>',
+                    'query': this.searchTerm,
+                    'page': this.page,
+                    'limit': 10
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                this.loading = false;
+                if (data.success) {
+                    this.searchedProducts = data.products;
+                    this.totalResults = data.total;
+                    this.hasMore = data.has_more;
+                }
+            })
+            .catch(() => this.loading = false);
+        },
+
+        loadMore() {
+            this.page++;
+            this.loading = true;
+
+            fetch('<?= $block->escapeJs($block->getSearchUrl()) ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    'form_key': '<?= $block->escapeJs($block->getFormKey()) ?>',
+                    'query': this.searchTerm,
+                    'page': this.page,
+                    'limit': 10
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                this.loading = false;
+                if (data.success) {
+                    this.searchedProducts = [...this.searchedProducts, ...data.products];
+                    this.hasMore = data.has_more;
+                }
+            })
+            .catch(() => this.loading = false);
+        },
+
+        toggleProduct(product) {
+            const index = this.tempSelected.findIndex(p => p.id === product.id);
+            if (index >= 0) {
+                this.tempSelected.splice(index, 1);
+            } else {
+                this.tempSelected.push(product);
+            }
+        },
+
+        isSelected(productId) {
+            return this.tempSelected.some(p => p.id === productId);
+        },
+
+        removeProduct(productId) {
+            this.selectedProducts = this.selectedProducts.filter(p => p.id !== productId);
+            this.productIds = this.selectedProducts.map(p => p.id).join(',');
+        }
+    }
+}
+</script>
+
+<style>
+[x-cloak] { display: none !important; }
+
+.product-picker-wrapper {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Selected Products Container */
+.selected-products-container {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    min-height: 120px;
+}
+
+.selected-products-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.selected-product-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    transition: all 0.2s;
+}
+
+.selected-product-item:hover {
+    border-color: #eb5202;
+    box-shadow: 0 2px 8px rgba(235, 82, 2, 0.1);
+}
+
+.selected-product-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.selected-product-name {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selected-product-meta {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.meta-label {
+    font-weight: 500;
+}
+
+.meta-separator {
+    margin: 0 8px;
+    color: #cbd5e1;
+}
+
+.remove-product-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.remove-product-btn:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 32px;
+    color: #94a3b8;
+}
+
+.empty-state svg {
+    color: #cbd5e1;
+    margin-bottom: 12px;
+}
+
+.empty-state p {
+    margin: 8px 0 4px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #64748b;
+}
+
+.empty-state small {
+    font-size: 13px;
+}
+
+/* Select Button */
+.select-products-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #eb5202;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.select-products-btn:hover {
+    background: #c44400;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(235, 82, 2, 0.3);
+}
+
+.select-products-btn:active {
+    transform: translateY(0);
+}
+
+/* Modal */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    padding: 24px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #eb5202;
+    box-shadow: 0 0 0 3px rgba(235, 82, 2, 0.1);
+}
+
+.search-hint {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+/* Results Info */
+.results-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.selected-count {
+    background: #eb5202;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* Products List */
+.products-list {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.product-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.product-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.product-card.selected {
+    border-color: #eb5202;
+    background: #eff6ff;
+}
+
+.product-checkbox input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.product-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-name {
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.product-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.product-price {
+    color: #eb5202;
+    font-weight: 600;
+}
+
+/* Load More */
+.load-more-container {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.load-more-btn {
+    padding: 10px 24px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.load-more-btn:hover:not(:disabled) {
+    border-color: #eb5202;
+    color: #eb5202;
+}
+
+.load-more-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading State */
+.loading-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #eb5202;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* No Results */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.no-results svg {
+    margin-bottom: 16px;
+}
+
+.no-results p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #64748b;
+    margin: 8px 0 4px;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.btn-cancel,
+.btn-confirm {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-cancel {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+}
+
+.btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.btn-confirm {
+    background: #eb5202;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #c44400;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(235, 82, 2, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .modal-container {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .product-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+</style>

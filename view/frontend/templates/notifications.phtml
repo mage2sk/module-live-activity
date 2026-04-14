@@ -1,0 +1,1181 @@
+<?php
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Live Activity Notifications Template
+ *
+ * @var $block \Panth\LiveActivity\Block\Activity
+ */
+
+if (!$block->isEnabled()) {
+    return;
+}
+
+$config = $block->getConfigJson();
+$ajaxUrl = $block->getAjaxUrl();
+$productId = $block->getCurrentProductId();
+$customCss = $block->getCustomCss();
+?>
+
+<div id="live-activity-container"
+     class="live-activity-container"
+     data-config="<?= $escaper->escapeHtmlAttr($config) ?>"
+     data-ajax-url="<?= $escaper->escapeUrl($ajaxUrl) ?>"
+     data-product-id="<?= $escaper->escapeHtmlAttr((string)($productId ?? '')) ?>">
+</div>
+
+<style>
+/* Live Activity Notification Styles */
+.live-activity-container {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.live-activity-notification {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 320px;
+    max-width: 400px;
+    padding: 1rem;
+    background: var(--live-activity-bg, #fff);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 40px var(--live-activity-shadow, rgba(0, 0, 0, 0.15)), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    pointer-events: auto;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.live-activity-notification.notification-visible {
+    opacity: 1;
+}
+
+.live-activity-notification:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.live-activity-clickable {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(13, 148, 136, 0.1);
+    tap-highlight-color: rgba(13, 148, 136, 0.1);
+}
+
+.live-activity-clickable:hover .live-activity-product {
+    color: var(--live-activity-highlight, #0D9488);
+}
+
+.live-activity-clickable {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Positioning */
+.live-activity-bottom-left {
+    bottom: 1.5rem;
+    left: 1.5rem;
+}
+
+.live-activity-bottom-right {
+    bottom: 1.5rem;
+    right: 1.5rem;
+}
+
+.live-activity-top-left {
+    top: 1.5rem;
+    left: 1.5rem;
+}
+
+.live-activity-top-right {
+    top: 1.5rem;
+    right: 1.5rem;
+}
+
+/* Icon */
+.live-activity-icon {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--live-activity-icon-bg, #0D9488) 0%, var(--live-activity-icon-bg-end, #0F766E) 100%);
+    color: white;
+    border-radius: 50%;
+}
+
+.live-activity-icon-svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+/* Product Image */
+.live-activity-product-image {
+    flex-shrink: 0;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: var(--live-activity-image-bg, #f5f5f5);
+    border: 1px solid var(--live-activity-border, #e2e8f0);
+}
+
+.live-activity-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Content */
+.live-activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.live-activity-message {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--live-activity-text, #1e293b);
+}
+
+.live-activity-message strong {
+    font-weight: 600;
+    color: var(--live-activity-highlight, #0D9488);
+}
+
+.live-activity-product {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--live-activity-text-secondary, #64748b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s ease;
+    font-weight: 600;
+}
+
+.live-activity-link-hint {
+    color: var(--live-activity-highlight, #0D9488);
+    font-weight: bold;
+}
+
+/* Close button */
+.live-activity-close {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--live-activity-close, #94a3b8);
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.live-activity-close:hover {
+    background: var(--live-activity-close-hover, #f1f5f9);
+    color: var(--live-activity-text-secondary, #64748b);
+}
+
+.live-activity-close svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Progress bar */
+.live-activity-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--live-activity-border, #e2e8f0);
+}
+
+.live-activity-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--live-activity-progress, #0D9488) 0%, var(--live-activity-progress-end, #2DD4BF) 100%);
+    animation: progress linear forwards;
+}
+
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Slide Animation */
+.notification-enter {
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.live-activity-animation-slide .notification-enter-start {
+    opacity: 0;
+    transform: translateX(-100%);
+}
+
+.live-activity-animation-slide .notification-enter-end {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.live-activity-animation-slide.live-activity-bottom-right .notification-enter-start,
+.live-activity-animation-slide.live-activity-top-right .notification-enter-start {
+    transform: translateX(100%);
+}
+
+/* Fade Animation */
+.live-activity-animation-fade .notification-enter-start {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.live-activity-animation-fade .notification-enter-end {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Bounce Animation */
+.live-activity-animation-bounce .notification-enter {
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.live-activity-animation-bounce .notification-enter-start {
+    opacity: 0;
+    transform: translateY(100%) scale(0.8);
+}
+
+.live-activity-animation-bounce .notification-enter-end {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Scale Animation */
+.live-activity-animation-scale .notification-enter-start {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.live-activity-animation-scale .notification-enter-end {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Leave transitions */
+.notification-leave {
+    transition: all 0.3s ease-in;
+}
+
+.notification-leave-start {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.notification-leave-end {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .live-activity-notification {
+        min-width: unset;
+        max-width: calc(100vw - 1.5rem);
+        width: auto;
+        left: 0.75rem !important;
+        right: auto !important;
+        padding: 0.75rem;
+        gap: 0.5rem;
+        border-radius: 0.625rem;
+        max-height: calc(100vh - 8rem);
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Right-positioned stays right */
+    .live-activity-bottom-right,
+    .live-activity-top-right {
+        left: auto !important;
+        right: 0.75rem !important;
+    }
+
+    .live-activity-close {
+        position: absolute;
+        top: 0.375rem;
+        right: 0.375rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: 0;
+        border-radius: 50%;
+    }
+
+    .live-activity-close svg {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    .live-activity-icon {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+    }
+
+    .live-activity-icon-svg {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .live-activity-product-image {
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-shrink: 0;
+    }
+
+    .live-activity-message {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        padding-right: 1.25rem;
+    }
+
+    .live-activity-product {
+        font-size: 0.6875rem;
+        margin-top: 0.25rem;
+    }
+
+    .live-activity-bottom-left,
+    .live-activity-bottom-right {
+        bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+
+    .live-activity-top-left,
+    .live-activity-top-right {
+        top: max(0.75rem, env(safe-area-inset-top));
+    }
+
+    .live-activity-notification:hover {
+        transform: none;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+
+    .live-activity-clickable:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+
+    .live-activity-close:active {
+        background: var(--live-activity-border, #e2e8f0);
+        transform: scale(0.9);
+    }
+
+    .live-activity-progress {
+        height: 3px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+    .live-activity-notification {
+        max-width: calc(100vw - 1rem);
+        left: 0.5rem !important;
+        padding: 0.625rem;
+        gap: 0.375rem;
+    }
+
+    .live-activity-bottom-right,
+    .live-activity-top-right {
+        left: auto !important;
+        right: 0.5rem !important;
+    }
+
+    .live-activity-icon {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    .live-activity-icon-svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .live-activity-product-image {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .live-activity-message {
+        font-size: 0.6875rem;
+    }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .live-activity-notification {
+        max-width: 360px;
+    }
+
+    .live-activity-bottom-left,
+    .live-activity-bottom-right {
+        bottom: 0.75rem;
+    }
+
+    .live-activity-top-left,
+    .live-activity-top-right {
+        top: 0.75rem;
+    }
+}
+
+/* Dark theme colors from Theme Customizer */
+@media (prefers-color-scheme: dark) {
+    .live-activity-notification {
+        background: var(--live-activity-bg-dark, #1e293b);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .live-activity-message {
+        color: var(--live-activity-text-dark, #f1f5f9);
+    }
+
+    .live-activity-product {
+        color: var(--live-activity-close, #94a3b8);
+    }
+
+    .live-activity-close {
+        color: var(--live-activity-text-secondary, #64748b);
+    }
+
+    .live-activity-close:hover {
+        background: var(--live-activity-border-dark, #334155);
+        color: var(--live-activity-text-dark, #cbd5e1);
+    }
+
+    .live-activity-product-image {
+        background: var(--live-activity-border-dark, #334155);
+        border-color: var(--live-activity-border-dark, #475569);
+    }
+
+    @media (max-width: 768px) {
+        .live-activity-notification {
+            background: var(--live-activity-bg-dark, #0f172a);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
+        }
+
+        .live-activity-message {
+            color: var(--live-activity-text-dark, #f1f5f9);
+        }
+
+        .live-activity-message strong {
+            color: var(--live-activity-highlight, #0D9488);
+        }
+
+        .live-activity-product {
+            color: var(--live-activity-highlight, #0D9488);
+        }
+
+        .live-activity-close:active {
+            background: var(--live-activity-border-dark, #475569);
+        }
+
+        .live-activity-progress {
+            background: var(--live-activity-border-dark, #334155);
+        }
+    }
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+    .live-activity-notification {
+        will-change: transform, opacity;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .notification-enter,
+    .notification-leave {
+        transform: translateZ(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .live-activity-notification,
+        .notification-enter,
+        .notification-leave {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        .live-activity-animation-slide .notification-enter-start,
+        .live-activity-animation-bounce .notification-enter-start,
+        .live-activity-animation-scale .notification-enter-start {
+            transform: none !important;
+        }
+
+        .live-activity-progress-bar {
+            animation: none !important;
+        }
+    }
+}
+
+/* ============================================
+   LUMA THEME - CLEAN & SIMPLE DESIGN
+   ============================================ */
+
+/* Clean, Minimal Notification Card for Luma */
+body:not([class*="hyva"]) .live-activity-notification {
+    min-width: 340px;
+    max-width: 380px;
+    padding: 14px 16px;
+    background: var(--live-activity-bg, #fff);
+    border: none;
+    border-left: 4px solid var(--live-activity-highlight, #0D9488);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15),
+                0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body:not([class*="hyva"]) .live-activity-notification:hover {
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.2),
+                0 3px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Simple Icon - Clean Circle */
+body:not([class*="hyva"]) .live-activity-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--live-activity-icon-bg, #0D9488);
+    box-shadow: none;
+}
+
+body:not([class*="hyva"]) .live-activity-icon-svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Clean Product Image */
+body:not([class*="hyva"]) .live-activity-product-image {
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--live-activity-image-border, #e5e5e5);
+    border-radius: 6px;
+    box-shadow: none;
+    background: var(--live-activity-image-bg, #f5f5f5);
+}
+
+body:not([class*="hyva"]) .live-activity-product-image img {
+    border-radius: 4px;
+}
+
+/* Clean Typography */
+body:not([class*="hyva"]) .live-activity-message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--live-activity-text, #333);
+    font-weight: 400;
+}
+
+body:not([class*="hyva"]) .live-activity-message strong {
+    font-weight: 700;
+    color: var(--live-activity-highlight, #0D9488);
+}
+
+body:not([class*="hyva"]) .live-activity-product {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--live-activity-text-secondary, #666);
+    font-weight: 600;
+}
+
+/* Simple Close Button */
+body:not([class*="hyva"]) .live-activity-close {
+    width: 28px;
+    height: 28px;
+    background: var(--live-activity-close-hover, #f5f5f5);
+    border: 1px solid var(--live-activity-border, #ddd);
+    color: var(--live-activity-close, #999);
+    border-radius: 4px;
+}
+
+body:not([class*="hyva"]) .live-activity-close:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+body:not([class*="hyva"]) .live-activity-close svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Clean Progress Bar */
+body:not([class*="hyva"]) .live-activity-progress-bar {
+    height: 3px;
+    background: var(--live-activity-progress, #0D9488);
+    box-shadow: none;
+}
+
+/* Positioning */
+body:not([class*="hyva"]) .live-activity-bottom-left,
+body:not([class*="hyva"]) .live-activity-bottom-right {
+    bottom: 20px;
+}
+
+body:not([class*="hyva"]) .live-activity-top-left,
+body:not([class*="hyva"]) .live-activity-top-right {
+    top: 20px;
+}
+
+/* Link Hint */
+body:not([class*="hyva"]) .live-activity-link-hint {
+    color: var(--live-activity-highlight, #0D9488);
+    font-weight: 600;
+}
+
+/* Simple Animations */
+body:not([class*="hyva"]) .notification-enter {
+    transition: all 0.3s ease-out;
+}
+
+body:not([class*="hyva"]) .notification-leave {
+    transition: all 0.2s ease-in;
+}
+
+/* Mobile Styles */
+@media (max-width: 767px) {
+    body:not([class*="hyva"]) .live-activity-notification {
+        min-width: 0 !important;
+        max-width: calc(100vw - 32px) !important;
+        width: calc(100vw - 32px) !important;
+        padding: 12px 14px;
+        box-sizing: border-box !important;
+    }
+
+    body:not([class*="hyva"]) .live-activity-bottom-left,
+    body:not([class*="hyva"]) .live-activity-bottom-right {
+        left: 16px !important;
+        right: 16px !important;
+        bottom: 16px;
+    }
+
+    body:not([class*="hyva"]) .live-activity-top-left,
+    body:not([class*="hyva"]) .live-activity-top-right {
+        left: 16px !important;
+        right: auto !important;
+        top: 16px;
+    }
+
+    body:not([class*="hyva"]) .live-activity-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    body:not([class*="hyva"]) .live-activity-icon-svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    body:not([class*="hyva"]) .live-activity-product-image {
+        width: 50px;
+        height: 50px;
+    }
+
+    body:not([class*="hyva"]) .live-activity-message {
+        font-size: 13px;
+    }
+
+    body:not([class*="hyva"]) .live-activity-product {
+        font-size: 12px;
+    }
+}
+
+/* Custom CSS from Admin Configuration */
+<?php if (!empty($customCss)): ?>
+<?= /* @noEscape */ $customCss ?>
+<?php endif; ?>
+</style>
+
+<script>
+(function() {
+    'use strict';
+
+    var LiveActivityNotifications = function() {
+        this.config = {};
+        this.ajaxUrl = '';
+        this.productId = null;
+        this.activities = [];
+        this.visibleNotifications = [];
+        this.currentIndex = 0;
+        this.notificationCount = 0;
+        this.isShowingNotification = false;
+        this.touchStartTime = 0;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.container = null;
+    };
+
+    LiveActivityNotifications.prototype.init = function() {
+        this.container = document.getElementById('live-activity-container');
+        if (!this.container) {
+            return;
+        }
+
+        this.config = JSON.parse(this.container.dataset.config || '{}');
+        this.ajaxUrl = this.container.dataset.ajaxUrl;
+        this.productId = this.container.dataset.productId || null;
+
+        if (!this.config.enabled) {
+            return;
+        }
+
+        var isMobile = this.isMobileDevice();
+        if (!this.config.mobileEnabled && isMobile) {
+            return;
+        }
+
+        this.fetchActivities();
+    };
+
+    LiveActivityNotifications.prototype.isMobileDevice = function() {
+        var isMobileWidth = window.innerWidth < 768;
+        var hasTouch = 'ontouchstart' in window ||
+                       navigator.maxTouchPoints > 0 ||
+                       navigator.msMaxTouchPoints > 0;
+        var mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        return isMobileWidth || (hasTouch && mobileUserAgent);
+    };
+
+    LiveActivityNotifications.prototype.fetchActivities = function() {
+        var self = this;
+        var url = this.productId
+            ? this.ajaxUrl + '?product_id=' + this.productId
+            : this.ajaxUrl;
+
+        fetch(url)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success && data.activities) {
+                    self.activities = data.activities;
+                    self.startNotifications();
+                }
+            })
+            .catch(function(error) {
+                // Silent fail
+            });
+    };
+
+    LiveActivityNotifications.prototype.startNotifications = function() {
+        var self = this;
+        if (this.activities.length === 0) {
+            return;
+        }
+
+        setTimeout(function() {
+            self.showNextNotification();
+        }, this.config.displayDelay);
+    };
+
+    LiveActivityNotifications.prototype.showNextNotification = function() {
+        var self = this;
+
+        if (this.isShowingNotification) {
+            return;
+        }
+
+        if (this.activities.length === 0) {
+            return;
+        }
+
+        if (this.config.maxNotifications > 0 && this.notificationCount >= this.config.maxNotifications) {
+            return;
+        }
+
+        this.isShowingNotification = true;
+        this.clearVisibleNotifications();
+
+        var activity = this.activities[this.currentIndex % this.activities.length];
+        this.currentIndex++;
+        this.notificationCount++;
+
+        var notification = {
+            id: Date.now() + Math.random(),
+            element: null
+        };
+
+        for (var key in activity) {
+            if (activity.hasOwnProperty(key)) {
+                notification[key] = activity[key];
+            }
+        }
+
+        notification.visible = true;
+
+        this.visibleNotifications = [notification];
+        this.renderNotification(notification);
+
+        setTimeout(function() {
+            self.closeNotification(notification.id);
+
+            setTimeout(function() {
+                self.isShowingNotification = false;
+
+                setTimeout(function() {
+                    self.showNextNotification();
+                }, self.config.interval);
+            }, 300);
+        }, this.config.duration);
+    };
+
+    LiveActivityNotifications.prototype.clearVisibleNotifications = function() {
+        for (var i = 0; i < this.visibleNotifications.length; i++) {
+            var notif = this.visibleNotifications[i];
+            if (notif.element && notif.element.parentNode) {
+                notif.element.parentNode.removeChild(notif.element);
+            }
+        }
+        this.visibleNotifications = [];
+    };
+
+    LiveActivityNotifications.prototype.renderNotification = function(notification) {
+        var self = this;
+        var notifDiv = document.createElement('div');
+
+        var positionClass = 'live-activity-' + this.config.position;
+        var animationClass = 'live-activity-animation-' + this.config.animation;
+        var clickableClass = notification.product_url ? ' live-activity-clickable' : '';
+
+        notifDiv.className = 'live-activity-notification ' + positionClass + ' ' + animationClass + clickableClass + ' notification-enter-start';
+        notifDiv.dataset.notificationId = notification.id;
+
+        if (this.config.showIcon) {
+            notifDiv.appendChild(this.createIcon(notification.type));
+        }
+
+        if (this.config.showImage && notification.product_image) {
+            notifDiv.appendChild(this.createProductImage(notification));
+        }
+
+        notifDiv.appendChild(this.createContent(notification));
+        notifDiv.appendChild(this.createCloseButton(notification.id));
+        notifDiv.appendChild(this.createProgressBar());
+
+        if (notification.product_url) {
+            notifDiv.addEventListener('click', function(event) {
+                self.redirectToProduct(notification, event);
+            });
+
+            notifDiv.addEventListener('touchstart', function(event) {
+                self.handleTouchStart(event);
+            });
+
+            notifDiv.addEventListener('touchend', function(event) {
+                self.handleTouchEnd(event, notification);
+            });
+        }
+
+        notification.element = notifDiv;
+        this.container.appendChild(notifDiv);
+
+        setTimeout(function() {
+            notifDiv.classList.remove('notification-enter-start');
+            notifDiv.classList.add('notification-enter-end', 'notification-visible');
+        }, 10);
+    };
+
+    LiveActivityNotifications.prototype.createIcon = function(type) {
+        var iconDiv = document.createElement('div');
+        iconDiv.className = 'live-activity-icon';
+
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'live-activity-icon-svg');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('viewBox', '0 0 24 24');
+
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        path.setAttribute('stroke-width', '2');
+
+        if (type === 'purchase') {
+            path.setAttribute('d', 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z');
+        } else if (type === 'cart_add') {
+            path.setAttribute('d', 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z');
+        } else if (type === 'wishlist_add') {
+            svg.setAttribute('fill', 'currentColor');
+            svg.removeAttribute('stroke');
+            path.setAttribute('d', 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+            path.removeAttribute('stroke-linecap');
+            path.removeAttribute('stroke-linejoin');
+            path.removeAttribute('stroke-width');
+        } else if (type === 'live_viewers') {
+            var path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path2.setAttribute('stroke-linecap', 'round');
+            path2.setAttribute('stroke-linejoin', 'round');
+            path2.setAttribute('stroke-width', '2');
+            path.setAttribute('d', 'M15 12a3 3 0 11-6 0 3 3 0 016 0z');
+            path2.setAttribute('d', 'M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z');
+            svg.appendChild(path);
+            svg.appendChild(path2);
+            iconDiv.appendChild(svg);
+            return iconDiv;
+        } else if (type === 'trending') {
+            path.setAttribute('d', 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6');
+        } else if (type === 'low_stock') {
+            path.setAttribute('d', 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z');
+        }
+
+        svg.appendChild(path);
+        iconDiv.appendChild(svg);
+        return iconDiv;
+    };
+
+    LiveActivityNotifications.prototype.createProductImage = function(notification) {
+        var imageDiv = document.createElement('div');
+        imageDiv.className = 'live-activity-product-image';
+
+        var img = document.createElement('img');
+        img.src = notification.product_image;
+        img.alt = notification.product_name || '';
+        img.loading = 'lazy';
+
+        imageDiv.appendChild(img);
+        return imageDiv;
+    };
+
+    LiveActivityNotifications.prototype.createContent = function(notification) {
+        var contentDiv = document.createElement('div');
+        contentDiv.className = 'live-activity-content';
+
+        var messageDiv = document.createElement('div');
+        messageDiv.className = 'live-activity-message';
+
+        var messageSpan = document.createElement('span');
+        this.populateMessage(messageSpan, notification);
+        messageDiv.appendChild(messageSpan);
+
+        contentDiv.appendChild(messageDiv);
+
+        if (notification.product_name) {
+            var productDiv = document.createElement('div');
+            productDiv.className = 'live-activity-product';
+
+            var productSpan = document.createElement('span');
+            productSpan.textContent = notification.product_name;
+            productDiv.appendChild(productSpan);
+
+            if (notification.product_url) {
+                var linkHint = document.createElement('span');
+                linkHint.className = 'live-activity-link-hint';
+                linkHint.textContent = ' → ';
+                productDiv.appendChild(linkHint);
+            }
+
+            contentDiv.appendChild(productDiv);
+        }
+
+        return contentDiv;
+    };
+
+    LiveActivityNotifications.prototype.populateMessage = function(span, notification) {
+        var type = notification.type;
+
+        if (type === 'purchase') {
+            var strong = document.createElement('strong');
+            strong.textContent = notification.customer_name;
+            span.appendChild(strong);
+            span.appendChild(document.createTextNode(' from '));
+            var locSpan = document.createElement('span');
+            locSpan.textContent = notification.customer_location;
+            span.appendChild(locSpan);
+            span.appendChild(document.createTextNode(' purchased '));
+            var timeSpan = document.createElement('span');
+            timeSpan.textContent = notification.time_ago;
+            span.appendChild(timeSpan);
+        } else if (type === 'cart_add') {
+            var strong = document.createElement('strong');
+            strong.textContent = notification.customer_name;
+            span.appendChild(strong);
+            span.appendChild(document.createTextNode(' from '));
+            var locSpan = document.createElement('span');
+            locSpan.textContent = notification.customer_location;
+            span.appendChild(locSpan);
+            span.appendChild(document.createTextNode(' added to cart '));
+            var timeSpan = document.createElement('span');
+            timeSpan.textContent = notification.time_ago;
+            span.appendChild(timeSpan);
+        } else if (type === 'wishlist_add') {
+            var strong = document.createElement('strong');
+            strong.textContent = notification.customer_name;
+            span.appendChild(strong);
+            span.appendChild(document.createTextNode(' from '));
+            var locSpan = document.createElement('span');
+            locSpan.textContent = notification.customer_location;
+            span.appendChild(locSpan);
+            span.appendChild(document.createTextNode(' added to wishlist '));
+            var timeSpan = document.createElement('span');
+            timeSpan.textContent = notification.time_ago;
+            span.appendChild(timeSpan);
+        } else if (type === 'live_viewers') {
+            var strong = document.createElement('strong');
+            strong.textContent = notification.viewer_count;
+            span.appendChild(strong);
+            span.appendChild(document.createTextNode(' '));
+            var pluralSpan = document.createElement('span');
+            pluralSpan.textContent = notification.viewer_count == 1 ? 'person is' : 'people are';
+            span.appendChild(pluralSpan);
+            span.appendChild(document.createTextNode(' viewing this right now'));
+        } else if (type === 'trending') {
+            span.appendChild(document.createTextNode('Trending: '));
+            var strong = document.createElement('strong');
+            strong.textContent = notification.view_count;
+            span.appendChild(strong);
+            span.appendChild(document.createTextNode(' views in the last '));
+            var periodSpan = document.createElement('span');
+            periodSpan.textContent = notification.time_period;
+            span.appendChild(periodSpan);
+        } else if (type === 'low_stock') {
+            span.appendChild(document.createTextNode('Stock Alert: Only '));
+            var strong = document.createElement('strong');
+            strong.textContent = notification.stock_qty;
+            span.appendChild(strong);
+            span.appendChild(document.createTextNode(' '));
+            var pluralSpan = document.createElement('span');
+            pluralSpan.textContent = notification.stock_qty == 1 ? 'item' : 'items';
+            span.appendChild(pluralSpan);
+            span.appendChild(document.createTextNode(' left!'));
+        }
+    };
+
+    LiveActivityNotifications.prototype.createCloseButton = function(notificationId) {
+        var self = this;
+        var button = document.createElement('button');
+        button.className = 'live-activity-close';
+        button.setAttribute('aria-label', 'Close notification');
+
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('viewBox', '0 0 24 24');
+
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+
+        svg.appendChild(path);
+        button.appendChild(svg);
+
+        button.addEventListener('click', function(event) {
+            event.stopPropagation();
+            self.closeNotification(notificationId);
+        });
+
+        return button;
+    };
+
+    LiveActivityNotifications.prototype.createProgressBar = function() {
+        var progressDiv = document.createElement('div');
+        progressDiv.className = 'live-activity-progress';
+
+        var progressBar = document.createElement('div');
+        progressBar.className = 'live-activity-progress-bar';
+        progressBar.style.animationDuration = this.config.duration + 'ms';
+
+        progressDiv.appendChild(progressBar);
+        return progressDiv;
+    };
+
+    LiveActivityNotifications.prototype.closeNotification = function(id) {
+        var self = this;
+        for (var i = 0; i < this.visibleNotifications.length; i++) {
+            var notification = this.visibleNotifications[i];
+            if (notification.id === id) {
+                notification.visible = false;
+
+                if (notification.element) {
+                    notification.element.classList.remove('notification-enter-end', 'notification-visible');
+                    notification.element.classList.add('notification-leave', 'notification-leave-start');
+
+                    setTimeout(function() {
+                        if (notification.element) {
+                            notification.element.classList.add('notification-leave-end');
+                        }
+                    }, 10);
+
+                    setTimeout(function() {
+                        if (notification.element && notification.element.parentNode) {
+                            notification.element.parentNode.removeChild(notification.element);
+                        }
+                        self.visibleNotifications = self.visibleNotifications.filter(function(n) {
+                            return n.id !== id;
+                        });
+                    }, 300);
+                }
+                break;
+            }
+        }
+    };
+
+    LiveActivityNotifications.prototype.handleTouchStart = function(event) {
+        this.touchStartTime = Date.now();
+        this.touchStartX = event.touches[0].clientX;
+        this.touchStartY = event.touches[0].clientY;
+    };
+
+    LiveActivityNotifications.prototype.handleTouchEnd = function(event, notification) {
+        if (event.target.closest('.live-activity-close')) {
+            return;
+        }
+
+        if (!notification.product_url) {
+            return;
+        }
+
+        var touchEndTime = Date.now();
+        var touchDuration = touchEndTime - this.touchStartTime;
+
+        var touchEndX = event.changedTouches[0].clientX;
+        var touchEndY = event.changedTouches[0].clientY;
+        var moveX = Math.abs(touchEndX - this.touchStartX);
+        var moveY = Math.abs(touchEndY - this.touchStartY);
+        var totalMove = Math.sqrt(moveX * moveX + moveY * moveY);
+
+        if (touchDuration < 500 && totalMove < 10) {
+            event.preventDefault();
+            setTimeout(function() {
+                window.location.href = notification.product_url;
+            }, 150);
+        }
+    };
+
+    LiveActivityNotifications.prototype.redirectToProduct = function(notification, event) {
+        if (notification.product_url && !event.target.closest('.live-activity-close')) {
+            var isTouchDevice = 'ontouchstart' in window;
+            if (!isTouchDevice) {
+                window.location.href = notification.product_url;
+            }
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            var liveActivity = new LiveActivityNotifications();
+            liveActivity.init();
+        });
+    } else {
+        var liveActivity = new LiveActivityNotifications();
+        liveActivity.init();
+    }
+})();
+</script>

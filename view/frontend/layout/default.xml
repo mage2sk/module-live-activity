@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Default Layout - Adds Live Activity to all pages
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="after.body.start">
+            <block class="Panth\LiveActivity\Block\Activity" name="live.activity.notifications" template="Panth_LiveActivity::notifications.phtml" after="-"/>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,43 @@
+{
+    "panth_live_activity": {
+        "column": {
+            "activity_id": true,
+            "activity_type": true,
+            "product_id": true,
+            "product_name": true,
+            "customer_name": true,
+            "customer_location": true,
+            "created_at": true,
+            "store_id": true,
+            "is_real": true
+        },
+        "index": {
+            "PANTH_LIVE_ACTIVITY_PRODUCT_ID": true,
+            "PANTH_LIVE_ACTIVITY_CREATED_AT": true,
+            "PANTH_LIVE_ACTIVITY_TYPE": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "panth_live_activity_stats": {
+        "column": {
+            "stat_id": true,
+            "product_id": true,
+            "current_viewers": true,
+            "views_today": true,
+            "cart_adds_today": true,
+            "wishlist_adds_today": true,
+            "purchases_today": true,
+            "last_view": true,
+            "updated_at": true
+        },
+        "index": {
+            "PANTH_LIVE_ACTIVITY_STATS_CURRENT_VIEWERS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "PANTH_LIVE_ACTIVITY_STATS_PRODUCT_ID": true
+        }
+    }
+}

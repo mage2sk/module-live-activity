@@ -1,0 +1,159 @@
+<?php
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Fake Locations Manager
+ *
+ * @var $block \Panth\LiveActivity\Block\Adminhtml\System\Config\FakeLocations
+ */
+$elementId = $block->getElementId();
+$elementName = $block->getElementName();
+$defaultLocations = $block->getDefaultValue();
+?>
+
+<div id="<?= $block->escapeHtmlAttr($elementId) ?>_container" x-data="fakeLocationsManager()" x-init="init()">
+    <!-- Hidden input to store JSON array -->
+    <input type="hidden"
+           id="<?= $block->escapeHtmlAttr($elementId) ?>"
+           name="<?= $block->escapeHtmlAttr($elementName) ?>"
+           value="<?= $block->escapeHtmlAttr($block->getValue()) ?>"
+           :value="JSON.stringify(locations)">
+
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 15px;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e5e5e5;">
+            <h4 style="margin: 0; font-size: 14px; font-weight: 600;">Fake Customer Locations (<span x-text="locations.length"></span>)</h4>
+            <button type="button"
+                    @click="resetToDefaults()"
+                    style="padding: 5px 12px; font-size: 12px; background: #fff; border: 1px solid #ccc; border-radius: 3px; cursor: pointer;">
+                Reset to Defaults
+            </button>
+        </div>
+
+        <!-- Add New Location -->
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; gap: 8px;">
+                <input type="text"
+                       x-model="newLocation"
+                       @keyup.enter="addLocation()"
+                       placeholder="Enter city name (e.g., Mumbai, London)"
+                       maxlength="50"
+                       style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px;">
+                <button type="button"
+                        @click="addLocation()"
+                        style="padding: 8px 16px; background: #1979c3; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 13px; white-space: nowrap;">
+                    + Add Location
+                </button>
+            </div>
+            <small style="display: block; margin-top: 5px; color: #666;">
+                City name for simulated notifications (e.g., "Mumbai" or "New York") - Max 50 characters
+            </small>
+        </div>
+
+        <!-- Success Message -->
+        <div x-show="showMessage"
+             x-transition
+             :class="messageType === 'success' ? 'message-success' : 'message-error'"
+             style="padding: 10px; margin-bottom: 15px; border-radius: 3px; font-size: 13px;"
+             :style="messageType === 'success' ? 'background: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32;' : 'background: #ffebee; border: 1px solid #f44336; color: #c62828;'">
+            <span x-text="message"></span>
+        </div>
+
+        <!-- Locations List -->
+        <div style="max-height: 400px; overflow-y: auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+                <template x-for="(location, index) in locations" :key="index">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 3px; font-size: 13px;">
+                        <span x-text="location" style="flex: 1;"></span>
+                        <button type="button"
+                                @click="removeLocation(index)"
+                                title="Remove"
+                                style="margin-left: 8px; color: #e53e3e; background: none; border: none; cursor: pointer; font-size: 18px; line-height: 1; padding: 0;">
+                            &times;
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="locations.length === 0"
+                 style="padding: 40px; text-align: center; color: #999;">
+                No locations added. Add some cities or click "Reset to Defaults".
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fakeLocationsManager() {
+    return {
+        locations: [],
+        newLocation: '',
+        showMessage: false,
+        message: '',
+        messageType: 'success',
+        defaultLocations: <?= /* @noEscape */ $defaultLocations ?>,
+
+        init() {
+            // Use getAttribute to read server-rendered value before Alpine overwrites the DOM property
+            const el = document.getElementById('<?= $block->escapeJs($elementId) ?>');
+            const existingValue = el.getAttribute('value');
+            if (existingValue && existingValue.trim() !== '' && existingValue !== '[]') {
+                try {
+                    const parsed = JSON.parse(existingValue);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        this.locations = parsed;
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse locations:', e);
+                }
+            }
+            this.locations = this.defaultLocations;
+        },
+
+        addLocation() {
+            const location = this.newLocation.trim();
+
+            if (!location) {
+                this.displayMessage('Please enter a city name', 'error');
+                return;
+            }
+
+            if (location.length > 50) {
+                this.displayMessage('City name is too long (max 50 characters)', 'error');
+                return;
+            }
+
+            if (this.locations.includes(location)) {
+                this.displayMessage('This location already exists', 'error');
+                return;
+            }
+
+            this.locations.push(location);
+            this.newLocation = '';
+            this.displayMessage('Location added successfully!', 'success');
+        },
+
+        removeLocation(index) {
+            const location = this.locations[index];
+            this.locations.splice(index, 1);
+            this.displayMessage('Removed: ' + location, 'success');
+        },
+
+        resetToDefaults() {
+            if (confirm('Are you sure you want to reset to default locations? This will remove all custom locations.')) {
+                this.locations = [...this.defaultLocations];
+                this.displayMessage('Reset to defaults successfully!', 'success');
+            }
+        },
+
+        displayMessage(msg, type) {
+            this.message = msg;
+            this.messageType = type;
+            this.showMessage = true;
+            setTimeout(() => {
+                this.showMessage = false;
+            }, 3000);
+        }
+    }
+}
+</script>

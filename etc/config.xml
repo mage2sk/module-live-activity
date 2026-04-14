@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Default Configuration Values
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <live_activity>
+            <general>
+                <enabled>1</enabled>
+                <position>bottom-left</position>
+                <display_delay>5</display_delay>
+                <notification_duration>5</notification_duration>
+                <interval>8</interval>
+                <max_notifications>10</max_notifications>
+            </general>
+            <activity_types>
+                <show_purchases>1</show_purchases>
+                <show_cart_adds>1</show_cart_adds>
+                <show_wishlist_adds>1</show_wishlist_adds>
+                <show_live_viewers>1</show_live_viewers>
+                <show_trending>1</show_trending>
+                <show_low_stock>1</show_low_stock>
+            </activity_types>
+            <data_source>
+                <use_real_data>1</use_real_data>
+                <use_simulated_data>1</use_simulated_data>
+                <time_range>24</time_range>
+                <anonymize_names>1</anonymize_names>
+                <fake_names><![CDATA[["James D.","John M.","Robert K.","Michael S.","William T.","David R.","Sarah J.","Emily W.","Emma A.","Olivia E.","Alex K.","Jordan M.","Taylor S.","Morgan R.","Riley B."]]]></fake_names>
+                <fake_locations><![CDATA[["New York","London","Dubai","Singapore","Sydney","Toronto","Paris","Tokyo","Berlin","Amsterdam","Mumbai","Delhi","Bangalore","Chennai","Pune"]]]></fake_locations>
+            </data_source>
+            <appearance>
+                <animation_style>slide</animation_style>
+                <show_product_image>1</show_product_image>
+                <show_icon>1</show_icon>
+            </appearance>
+            <advanced>
+                <mobile_enabled>1</mobile_enabled>
+            </advanced>
+        </live_activity>
+    </default>
+</config>

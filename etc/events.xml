@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) Panth Infotech. All rights reserved.
+ * Event Observers Configuration
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Track order placement -->
+    <event name="sales_order_place_after">
+        <observer name="panth_live_activity_track_order" instance="Panth\LiveActivity\Observer\TrackOrderPlacement"/>
+    </event>
+
+    <!-- Track add to cart -->
+    <event name="checkout_cart_product_add_after">
+        <observer name="panth_live_activity_track_cart_add" instance="Panth\LiveActivity\Observer\TrackCartAdd"/>
+    </event>
+
+    <!-- Track add to wishlist -->
+    <event name="wishlist_add_product">
+        <observer name="panth_live_activity_track_wishlist_add" instance="Panth\LiveActivity\Observer\TrackWishlistAdd"/>
+    </event>
+</config>

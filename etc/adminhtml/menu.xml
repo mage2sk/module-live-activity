@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Panth_LiveActivity::group"
+             title="Live Activity"
+             module="Panth_LiveActivity"
+             sortOrder="70"
+             parent="Panth_Core::panth_extensions"
+             resource="Panth_LiveActivity::config"/>
+        <add id="Panth_LiveActivity::settings"
+             title="Configuration"
+             module="Panth_LiveActivity"
+             sortOrder="10"
+             parent="Panth_LiveActivity::group"
+             action="adminhtml/system_config/edit/section/live_activity"
+             resource="Panth_LiveActivity::config"/>
+    </menu>
+</config>

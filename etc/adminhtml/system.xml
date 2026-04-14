@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ * Admin System Configuration
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="panth" translate="label" sortOrder="300">
+            <label>🚀 Panth Extensions</label>
+        </tab>
+
+        <section id="live_activity" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Live Activity &amp; Social Proof</label>
+            <tab>panth</tab>
+            <resource>Panth_LiveActivity::config</resource>
+
+
+            <!-- General Settings -->
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Live Activity</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Show live activity notifications on product pages</comment>
+                    <backend_model>Panth\LiveActivity\Model\Config\Backend\Enabled</backend_model>
+                </field>
+
+                <field id="position" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Notification Position</label>
+                    <source_model>Panth\LiveActivity\Model\Config\Source\Position</source_model>
+                    <comment>Where to display activity notifications</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="display_delay" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display Delay (seconds)</label>
+                    <comment>Wait time before showing first notification (0-60 seconds)</comment>
+                    <validate>validate-number validate-number-range number-range-0-60</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="notification_duration" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Notification Duration (seconds)</label>
+                    <comment>How long each notification stays visible (3-30 seconds)</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                    <validate>validate-number validate-number-range number-range-3-30</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="interval" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Interval Between Notifications (seconds)</label>
+                    <comment>Time between notifications (5-120 seconds)</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                    <validate>validate-number validate-number-range number-range-5-120</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="max_notifications" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Maximum Notifications Per Page</label>
+                    <comment>Maximum number of notifications to show per page view (0 = unlimited)</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                    <validate>validate-number</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- Activity Types -->
+            <group id="activity_types" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Activity Types to Display</label>
+
+                <field id="show_purchases" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Recent Purchases</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>"John from New York purchased this 5 minutes ago"</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_cart_adds" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Cart Additions</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>"Sarah added this to cart 2 minutes ago"</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_wishlist_adds" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Wishlist Additions</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>"This product was added to 23 wishlists today"</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_live_viewers" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Live Viewers Count</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>"15 people are viewing this product right now"</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_trending" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Trending Products</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>"Trending: 50 views in last hour"</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_low_stock" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Low Stock Alerts</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>"Stock alert: Only 5 left!"</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+            </group>
+
+            <!-- Data Source -->
+            <group id="data_source" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Data Source Settings</label>
+
+                <field id="use_real_data" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Use Real Activity Data</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Track and display real customer activity</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="use_simulated_data" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Use Simulated Activity</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Generate realistic activity for low-traffic stores. Great for new stores!</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="time_range" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Activity Time Range</label>
+                    <source_model>Panth\LiveActivity\Model\Config\Source\TimeRange</source_model>
+                    <comment>Show activity from last X hours/days</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                    <depends>
+                        <field id="use_real_data">1</field>
+                    </depends>
+                </field>
+
+                <field id="anonymize_names" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Anonymize Customer Names</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Show first name + initial (e.g., "John D.") for privacy</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="featured_products" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Featured Product IDs</label>
+                    <comment>Select products to show in notifications. If empty, random enabled products will be shown.</comment>
+                    <frontend_model>Panth\LiveActivity\Block\Adminhtml\System\Config\ProductPicker</frontend_model>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="fake_names" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Fake Customer Names</label>
+                    <comment><![CDATA[
+                        <strong>Manage fake customer names for simulated activity notifications.</strong><br>
+                        Choose from default names or add your own custom names. Names are categorized by gender for realistic notifications.
+                    ]]></comment>
+                    <frontend_model>Panth\LiveActivity\Block\Adminhtml\System\Config\FakeNames</frontend_model>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                    <depends>
+                        <field id="use_simulated_data">1</field>
+                    </depends>
+                </field>
+
+                <field id="fake_locations" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Fake Customer Locations</label>
+                    <comment><![CDATA[
+                        <strong>Manage fake customer locations for simulated activity notifications.</strong><br>
+                        Default: Indian cities. Override per store view for different markets.
+                    ]]></comment>
+                    <frontend_model>Panth\LiveActivity\Block\Adminhtml\System\Config\FakeLocations</frontend_model>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                    <depends>
+                        <field id="use_simulated_data">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- Appearance -->
+            <group id="appearance" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Appearance Settings</label>
+
+                <field id="animation_style" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Animation Style</label>
+                    <source_model>Panth\LiveActivity\Model\Config\Source\Animation</source_model>
+                    <comment>Notification entrance/exit animation</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_product_image" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Product Image</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Display small product thumbnail in notification</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="show_icon" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Activity Icon</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Display icon for activity type (cart, heart, etc.)</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="custom_css" translate="label comment" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Custom CSS</label>
+                    <comment><![CDATA[Live Activity colors are managed via CSS variables from theme-config.json. Use this field for minor CSS overrides only. Target classes like <code>.live-activity-notification</code>, <code>.live-activity-icon</code>, <code>.live-activity-message</code>, etc.]]></comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+            </group>
+
+            <!-- Advanced -->
+            <group id="advanced" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced Settings</label>
+
+                <field id="exclude_categories" translate="label comment" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Categories</label>
+                    <source_model>Panth\LiveActivity\Model\Config\Source\Category</source_model>
+                    <comment>Don't show notifications for products in these categories</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+
+                <field id="mobile_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable on Mobile</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Show notifications on mobile devices</comment>
+                    <backend_model>Magento\Framework\App\Config\Value</backend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

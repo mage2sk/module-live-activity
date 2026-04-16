@@ -14,7 +14,8 @@
         "index": {
             "PANTH_LIVE_ACTIVITY_PRODUCT_ID": true,
             "PANTH_LIVE_ACTIVITY_CREATED_AT": true,
-            "PANTH_LIVE_ACTIVITY_TYPE": true
+            "PANTH_LIVE_ACTIVITY_TYPE": true,
+            "PANTH_LIVE_ACTIVITY_ACTIVITY_TYPE": true
         },
         "constraint": {
             "PRIMARY": true

@@ -4,6 +4,15 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] -- Image fallback fix
+
+### Fixed
+- `getProductImage()` returned the Magento placeholder URL when a product had only `image` set (no `small_image` / `thumbnail`). Common for products created via REST or `ProductRepository`, which only populate `image` by default. Notifications now show the real product photo instead of the generic placeholder.
+- The third fallback (thumbnail) skipped the `placeholder` URL check, so a placeholder URL leaked through to the frontend even when the first two tries correctly fell through.
+
+### Changed
+- `getProductImage()` now picks the first attribute (`image` → `small_image` → `thumbnail`) whose value is non-empty AND not `'no_selection'`, then renders the helper once. Previously it called `setImageFile()` with `'no_selection'` values which produced placeholder URLs.
+
 ## [1.0.0] -- Initial release
 
 ### Added -- 6 notification types

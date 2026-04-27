@@ -2,7 +2,7 @@
     "name": "mage2kishan/module-live-activity",
     "description": "Live Activity & Social Proof notifications for Magento 2. Shows real-time customer activity (purchases, cart adds, wishlists) to create urgency and social proof. Supports configurable fake names, locations, featured products, animation styles, and mobile responsiveness. Compatible with Luma and Hyva themes.",
     "type": "magento2-module",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "license": "proprietary",
     "keywords": [
         "magento2",

@@ -350,43 +350,24 @@ class ActivityProvider
      */
     private function getProductImage($product): string
     {
-        try {
-            // Try to get the small image first
-            $imageUrl = $this->imageHelper->init($product, 'product_small_image')
-                ->setImageFile($product->getSmallImage())
-                ->resize(90, 90)
-                ->getUrl();
-
-            // Check if it's a placeholder
-            if (strpos($imageUrl, 'placeholder') === false) {
-                return $imageUrl;
+        $imageFile = null;
+        foreach (['image', 'small_image', 'thumbnail'] as $attr) {
+            $val = $product->getData($attr);
+            if ($val && $val !== 'no_selection') {
+                $imageFile = $val;
+                break;
             }
-        } catch (\Exception $e) {
-            // Continue to fallback
         }
-
+        if (!$imageFile) {
+            return '';
+        }
         try {
-            // Fallback to base image
-            $imageUrl = $this->imageHelper->init($product, 'product_base_image')
-                ->setImageFile($product->getImage())
+            $url = $this->imageHelper->init($product, 'product_small_image')
+                ->setImageFile($imageFile)
                 ->resize(90, 90)
                 ->getUrl();
-
-            if (strpos($imageUrl, 'placeholder') === false) {
-                return $imageUrl;
-            }
+            return (strpos($url, 'placeholder') === false) ? $url : '';
         } catch (\Exception $e) {
-            // Continue to fallback
-        }
-
-        try {
-            // Last resort - try thumbnail
-            return $this->imageHelper->init($product, 'product_thumbnail_image')
-                ->setImageFile($product->getThumbnail())
-                ->resize(90, 90)
-                ->getUrl();
-        } catch (\Exception $e) {
-            // Return empty string if all fail
             return '';
         }
     }

@@ -720,6 +720,8 @@ body:not([class*="hyva"]) .notification-leave {
         this.touchStartX = 0;
         this.touchStartY = 0;
         this.container = null;
+        this._isMobile = false;
+        this._hasTouch = false;
     };
 
     LiveActivityNotifications.prototype.init = function() {
@@ -736,22 +738,30 @@ body:not([class*="hyva"]) .notification-leave {
             return;
         }
 
-        var isMobile = this.isMobileDevice();
-        if (!this.config.mobileEnabled && isMobile) {
+        // Cache device detection once, before any animations run, to avoid
+        // forced reflows from window.innerWidth reads on later invocations.
+        this._detectMobile();
+
+        if (!this.config.mobileEnabled && this._isMobile) {
             return;
         }
 
         this.fetchActivities();
     };
 
-    LiveActivityNotifications.prototype.isMobileDevice = function() {
+    LiveActivityNotifications.prototype._detectMobile = function() {
         var isMobileWidth = window.innerWidth < 768;
         var hasTouch = 'ontouchstart' in window ||
                        navigator.maxTouchPoints > 0 ||
                        navigator.msMaxTouchPoints > 0;
         var mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-        return isMobileWidth || (hasTouch && mobileUserAgent);
+        this._hasTouch = hasTouch;
+        this._isMobile = isMobileWidth || (hasTouch && mobileUserAgent);
+    };
+
+    LiveActivityNotifications.prototype.isMobileDevice = function() {
+        return this._isMobile === true;
     };
 
     LiveActivityNotifications.prototype.fetchActivities = function() {
@@ -1161,21 +1171,29 @@ body:not([class*="hyva"]) .notification-leave {
 
     LiveActivityNotifications.prototype.redirectToProduct = function(notification, event) {
         if (notification.product_url && !event.target.closest('.live-activity-close')) {
-            var isTouchDevice = 'ontouchstart' in window;
-            if (!isTouchDevice) {
+            if (!this._hasTouch) {
                 window.location.href = notification.product_url;
             }
         }
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            var liveActivity = new LiveActivityNotifications();
-            liveActivity.init();
-        });
-    } else {
+    function boot() {
         var liveActivity = new LiveActivityNotifications();
         liveActivity.init();
+    }
+
+    function deferredBoot() {
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(boot, { timeout: 2000 });
+        } else {
+            setTimeout(boot, 500);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', deferredBoot);
+    } else {
+        deferredBoot();
     }
 })();
 </script>

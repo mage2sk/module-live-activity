@@ -4,6 +4,14 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] -- README rewrite
+
+### Changed
+- Rewrote README to match current gold template structure: SEO meta comment, Quick Answer block, hire promo, full configuration table sourced from system.xml, How It Works section, nine FAQ entries, Quick Links table, and closing CTA.
+- Canonical link updated to the live product page.
+- Removed inaccurate Adobe Commerce Marketplace link; replaced with live product page link.
+- Configuration table now lists all five groups (General, Activity Types, Data Source, Appearance, Advanced) with real field IDs and defaults from config.xml.
+
 ## [1.0.2] -- Image fallback fix
 
 ### Fixed

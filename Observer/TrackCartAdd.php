@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Observer;
@@ -13,23 +10,13 @@ use Panth\LiveActivity\Model\Activity;
 
 class TrackCartAdd implements ObserverInterface
 {
-    /**
-     * @var ActivityTracker
-     */
     private $activityTracker;
 
-    /**
-     * @param ActivityTracker $activityTracker
-     */
     public function __construct(ActivityTracker $activityTracker)
     {
         $this->activityTracker = $activityTracker;
     }
 
-    /**
-     * @param Observer $observer
-     * @return void
-     */
     public function execute(Observer $observer)
     {
         $product = $observer->getEvent()->getProduct();

@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright (c) Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Block;
@@ -15,34 +12,14 @@ use Panth\LiveActivity\Helper\Config;
 
 class Activity extends Template
 {
-    /**
-     * @var Config
-     */
     private Config $config;
 
-    /**
-     * @var Json
-     */
     private Json $jsonSerializer;
 
-    /**
-     * @var RequestInterface
-     */
     private RequestInterface $request;
 
-    /**
-     * @var ProductRepositoryInterface
-     */
     private ProductRepositoryInterface $productRepository;
 
-    /**
-     * @param Template\Context $context
-     * @param Config $config
-     * @param Json $jsonSerializer
-     * @param RequestInterface $request
-     * @param ProductRepositoryInterface $productRepository
-     * @param array $data
-     */
     public function __construct(
         Template\Context $context,
         Config $config,
@@ -58,41 +35,21 @@ class Activity extends Template
         $this->productRepository = $productRepository;
     }
 
-    /**
-     * Check if module is enabled
-     *
-     * @return bool
-     */
     public function isEnabled(): bool
     {
         return $this->config->isEnabled();
     }
 
-    /**
-     * Get configuration as JSON
-     *
-     * @return string
-     */
     public function getConfigJson(): string
     {
         return $this->jsonSerializer->serialize($this->config->getFrontendConfig());
     }
 
-    /**
-     * Get AJAX URL
-     *
-     * @return string
-     */
     public function getAjaxUrl(): string
     {
         return $this->getUrl('liveactivity/ajax/getactivity');
     }
 
-    /**
-     * Get current product ID if on product page
-     *
-     * @return int|null
-     */
     public function getCurrentProductId(): ?int
     {
         $productId = (int)$this->request->getParam('id');
@@ -107,11 +64,6 @@ class Activity extends Template
         return null;
     }
 
-    /**
-     * Get custom CSS from configuration
-     *
-     * @return string
-     */
     public function getCustomCss(): string
     {
         return $this->config->getCustomCss();

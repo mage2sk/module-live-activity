@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Model;
@@ -18,9 +15,6 @@ class Activity extends AbstractModel
     const TYPE_TRENDING = 'trending';
     const TYPE_LOW_STOCK = 'low_stock';
 
-    /**
-     * @return void
-     */
     protected function _construct()
     {
         $this->_init(\Panth\LiveActivity\Model\ResourceModel\Activity::class);

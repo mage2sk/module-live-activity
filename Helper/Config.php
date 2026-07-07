@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Helper;
@@ -41,25 +38,16 @@ class Config extends AbstractHelper
     const XML_PATH_EXCLUDE_CATEGORIES = 'live_activity/advanced/exclude_categories';
     const XML_PATH_MOBILE_ENABLED = 'live_activity/advanced/mobile_enabled';
 
-    /**
-     * Check if module is enabled
-     */
     public function isEnabled(): bool
     {
         return $this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED, ScopeInterface::SCOPE_STORE);
     }
 
-    /**
-     * Get configuration value
-     */
     public function getConfig(string $path)
     {
         return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE);
     }
 
-    /**
-     * Get featured product IDs
-     */
     public function getFeaturedProductIds(): array
     {
         $ids = $this->getConfig(self::XML_PATH_FEATURED_PRODUCTS);
@@ -70,19 +58,11 @@ class Config extends AbstractHelper
         return array_filter(array_map('intval', explode(',', $ids)));
     }
 
-    /**
-     * Get custom CSS from configuration
-     */
     public function getCustomCss(): string
     {
         return (string)$this->getConfig(self::XML_PATH_CUSTOM_CSS);
     }
 
-    /**
-     * Get excluded category IDs as array
-     *
-     * @return array
-     */
     public function getExcludedCategoryIds(): array
     {
         $categories = $this->getConfig(self::XML_PATH_EXCLUDE_CATEGORIES);
@@ -90,41 +70,29 @@ class Config extends AbstractHelper
             return [];
         }
 
-        // Config stores multiselect as comma-separated string
         return array_filter(array_map('intval', explode(',', $categories)));
     }
 
-    /**
-     * Get enabled fake names from configuration
-     *
-     * @return array Array of fake name strings
-     */
     public function getEnabledFakeNames(): array
     {
         $namesJson = $this->getConfig(self::XML_PATH_FAKE_NAMES);
 
         if (empty($namesJson)) {
-            // Return default names if nothing configured
             return $this->getDefaultFakeNames();
         }
 
         try {
             $namesData = json_decode($namesJson, true);
 
-            // Handle both formats: simple string array or legacy object array
             if (!is_array($namesData)) {
                 return $this->getDefaultFakeNames();
             }
 
-            // Check if it's a simple string array (new format)
             if (isset($namesData[0]) && is_string($namesData[0])) {
-                // New format: simple array of strings ["John D.", "Sarah M.", ...]
                 return array_values(array_filter($namesData));
             }
 
-            // Legacy format: array of objects [{"name": "John", "enabled": true}, ...]
             if (isset($namesData[0]) && is_array($namesData[0]) && isset($namesData[0]['name'])) {
-                // Filter only enabled names and extract just the name strings
                 $enabledNames = array_filter($namesData, function($nameObj) {
                     return isset($nameObj['enabled']) && $nameObj['enabled'] === true;
                 });
@@ -133,7 +101,6 @@ class Config extends AbstractHelper
                     return $nameObj['name'];
                 }, $enabledNames);
 
-                // If no names are enabled, return defaults
                 if (empty($names)) {
                     return $this->getDefaultFakeNames();
                 }
@@ -143,17 +110,10 @@ class Config extends AbstractHelper
 
             return $this->getDefaultFakeNames();
         } catch (\Exception $e) {
-            // On any error, return defaults
             return $this->getDefaultFakeNames();
         }
     }
 
-    /**
-     * Get default fake names (fallback)
-     * Returns names in "FirstName L." format
-     *
-     * @return array
-     */
     private function getDefaultFakeNames(): array
     {
         return [
@@ -163,11 +123,6 @@ class Config extends AbstractHelper
         ];
     }
 
-    /**
-     * Get fake locations from configuration
-     *
-     * @return array Array of city name strings
-     */
     public function getFakeLocations(): array
     {
         $value = $this->getConfig(self::XML_PATH_FAKE_LOCATIONS);
@@ -184,17 +139,14 @@ class Config extends AbstractHelper
         ];
     }
 
-    /**
-     * Get all configuration as array for frontend
-     */
     public function getFrontendConfig(): array
     {
         return [
             'enabled' => $this->isEnabled(),
             'position' => $this->getConfig(self::XML_PATH_POSITION),
-            'displayDelay' => (int)$this->getConfig(self::XML_PATH_DISPLAY_DELAY) * 1000, // Convert to ms
-            'duration' => (int)$this->getConfig(self::XML_PATH_DURATION) * 1000, // Convert to ms
-            'interval' => (int)$this->getConfig(self::XML_PATH_INTERVAL) * 1000, // Convert to ms
+            'displayDelay' => (int)$this->getConfig(self::XML_PATH_DISPLAY_DELAY) * 1000,
+            'duration' => (int)$this->getConfig(self::XML_PATH_DURATION) * 1000,
+            'interval' => (int)$this->getConfig(self::XML_PATH_INTERVAL) * 1000,
             'maxNotifications' => (int)$this->getConfig(self::XML_PATH_MAX_NOTIFICATIONS),
             'animation' => $this->getConfig(self::XML_PATH_ANIMATION),
             'showImage' => (bool)$this->getConfig(self::XML_PATH_SHOW_IMAGE),

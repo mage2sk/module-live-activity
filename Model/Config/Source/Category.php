@@ -1,8 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- * Custom Category Source Model - Shows all categories in hierarchical tree
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Model\Config\Source;
@@ -14,20 +10,10 @@ use Magento\Catalog\Model\Category as CategoryModel;
 
 class Category implements OptionSourceInterface
 {
-    /**
-     * @var CollectionFactory
-     */
     private $categoryCollectionFactory;
 
-    /**
-     * @var StoreManagerInterface
-     */
     private $storeManager;
 
-    /**
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
         CollectionFactory $categoryCollectionFactory,
         StoreManagerInterface $storeManager
@@ -36,11 +22,6 @@ class Category implements OptionSourceInterface
         $this->storeManager = $storeManager;
     }
 
-    /**
-     * Return array of categories as value-label pairs
-     *
-     * @return array
-     */
     public function toOptionArray(): array
     {
         $options = [];
@@ -53,10 +34,8 @@ class Category implements OptionSourceInterface
                 ->addIsActiveFilter()
                 ->addOrderField('path');
 
-            // Get current store's root category ID
             $rootCategoryId = $this->storeManager->getStore()->getRootCategoryId();
 
-            // Filter to only include categories under the current store's root
             $collection->addFieldToFilter('path', ['like' => "1/{$rootCategoryId}%"]);
 
             $categoryById = [];
@@ -69,15 +48,11 @@ class Category implements OptionSourceInterface
                 ];
             }
 
-            // Build hierarchical options with indentation
             foreach ($categoryById as $categoryData) {
-                // Skip root categories (level 0 and 1)
                 if ($categoryData['level'] <= 1) {
                     continue;
                 }
 
-                // Calculate indentation based on level
-                // Level 2 = no indent (store root), Level 3 = --, Level 4 = ----, etc.
                 $indent = str_repeat('--', max(0, $categoryData['level'] - 2));
                 $label = $indent ? $indent . ' ' . $categoryData['name'] : $categoryData['name'];
 
@@ -87,8 +62,6 @@ class Category implements OptionSourceInterface
                 ];
             }
         } catch (\Exception $e) {
-            // If there's an error, return empty array
-            // In production, you might want to log this
             return [];
         }
 

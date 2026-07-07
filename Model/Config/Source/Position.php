@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Model\Config\Source;
@@ -10,9 +7,6 @@ use Magento\Framework\Data\OptionSourceInterface;
 
 class Position implements OptionSourceInterface
 {
-    /**
-     * @return array
-     */
     public function toOptionArray()
     {
         return [

@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Model;
@@ -15,44 +12,18 @@ use Psr\Log\LoggerInterface;
 
 class ActivityTracker
 {
-    /**
-     * @var ActivityFactory
-     */
     private $activityFactory;
 
-    /**
-     * @var ActivityResource
-     */
     private $activityResource;
 
-    /**
-     * @var Config
-     */
     private $config;
 
-    /**
-     * @var StoreManagerInterface
-     */
     private $storeManager;
 
-    /**
-     * @var CustomerSession
-     */
     private $customerSession;
 
-    /**
-     * @var LoggerInterface
-     */
     private $logger;
 
-    /**
-     * @param ActivityFactory $activityFactory
-     * @param ActivityResource $activityResource
-     * @param Config $config
-     * @param StoreManagerInterface $storeManager
-     * @param CustomerSession $customerSession
-     * @param LoggerInterface $logger
-     */
     public function __construct(
         ActivityFactory $activityFactory,
         ActivityResource $activityResource,
@@ -69,13 +40,6 @@ class ActivityTracker
         $this->logger = $logger;
     }
 
-    /**
-     * Track activity
-     *
-     * @param string $activityType
-     * @param array $data
-     * @return void
-     */
     public function track(string $activityType, array $data): void
     {
         if (!$this->config->isEnabled() || !$this->config->getConfig(Config::XML_PATH_USE_REAL_DATA)) {
@@ -100,11 +64,6 @@ class ActivityTracker
         }
     }
 
-    /**
-     * Get customer name (anonymized if configured)
-     *
-     * @return string|null
-     */
     private function getCustomerName(): ?string
     {
         if (!$this->customerSession->isLoggedIn()) {
@@ -116,18 +75,12 @@ class ActivityTracker
         $lastName = $customer->getLastname();
 
         if ($this->config->getConfig(Config::XML_PATH_ANONYMIZE)) {
-            // Return "John D." format
             return $firstName . ' ' . substr($lastName, 0, 1) . '.';
         }
 
         return $firstName . ' ' . $lastName;
     }
 
-    /**
-     * Generate anonymous name for guest customers
-     *
-     * @return string
-     */
     private function generateAnonymousName(): string
     {
         $names = [
@@ -135,15 +88,10 @@ class ActivityTracker
             'Sam', 'Jamie', 'Dakota', 'Skylar', 'Parker', 'Rowan', 'Sage', 'Cameron'
         ];
 
-        $initial = chr(rand(65, 90)); // Random A-Z
+        $initial = chr(rand(65, 90));
         return $names[array_rand($names)] . ' ' . $initial . '.';
     }
 
-    /**
-     * Get customer location (city/country)
-     *
-     * @return string|null
-     */
     private function getCustomerLocation(): ?string
     {
         $locations = $this->config->getFakeLocations();

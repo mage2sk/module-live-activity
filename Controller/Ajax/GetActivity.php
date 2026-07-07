@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\LiveActivity\Controller\Ajax;
@@ -14,32 +11,14 @@ use Panth\LiveActivity\Helper\Config;
 
 class GetActivity implements HttpGetActionInterface
 {
-    /**
-     * @var JsonFactory
-     */
     private $jsonFactory;
 
-    /**
-     * @var RequestInterface
-     */
     private $request;
 
-    /**
-     * @var ActivityProvider
-     */
     private $activityProvider;
 
-    /**
-     * @var Config
-     */
     private $config;
 
-    /**
-     * @param JsonFactory $jsonFactory
-     * @param RequestInterface $request
-     * @param ActivityProvider $activityProvider
-     * @param Config $config
-     */
     public function __construct(
         JsonFactory $jsonFactory,
         RequestInterface $request,
@@ -52,11 +31,6 @@ class GetActivity implements HttpGetActionInterface
         $this->config = $config;
     }
 
-    /**
-     * Get activity data
-     *
-     * @return \Magento\Framework\Controller\Result\Json
-     */
     public function execute()
     {
         $result = $this->jsonFactory->create();

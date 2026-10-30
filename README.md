@@ -214,7 +214,7 @@ The tables `panth_live_activity` and `panth_live_activity_stats` and the `live_a
 
 ## License
 
-Commercial software license. See [LICENSE.txt](LICENSE.txt) in this repository.
+Free and open source under the MIT License. See [LICENSE.txt](LICENSE.txt).
 
 ## Changelog
 
